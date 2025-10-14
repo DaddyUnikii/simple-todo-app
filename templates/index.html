@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>To-Do List</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 10px; margin: 5px 0; background: #f0f0f0; border-radius: 4px; }
+        .done { text-decoration: line-through; color: #888; }
+        button { background: #4CAF50; color: white; border: none; padding: 5px 10px; }
+    </style>
+</head>
+<body>
+    <h1>📝 To-Do List</h1>
+    <div>
+        <input type="text" id="taskInput" placeholder="Tugas baru...">
+        <button onclick="addTodo()">Tambah</button>
+    </div>
+    <ul id="todos"></ul>
+    
+    <script>
+        function loadTodos() {
+            fetch('/api/todos')
+                .then(res => res.json())
+                .then(data => {
+                    const ul = document.getElementById('todos');
+                    ul.innerHTML = '';
+                    data.forEach(todo => {
+                        const li = document.createElement('li');
+                        if (todo.done) li.classList.add('done');
+                        li.textContent = todo.task;
+                        li.onclick = () => toggleDone(todo.id);
+                        ul.appendChild(li);
+                    });
+                });
+        }
+        
+        function addTodo() {
+            const input = document.getElementById('taskInput');
+            fetch('/api/todos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ task: input.value })
+            }).then(loadTodos);
+            input.value = '';
+        }
+        
+        function toggleDone(id) {
+            fetch(`/api/todos/${id}`, { method: 'PUT' })
+                .then(loadTodos);
+        }
+        
+        loadTodos();
+    </script>
+</body>
+</html>
